@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Auth;
 use Input;
 use Session;
+use App\User;
 
 class AuthController extends Controller {
 
@@ -15,9 +16,11 @@ class AuthController extends Controller {
 
 		$data = [];
 		$data += ['type' => 'li'];
-		$data += ['errors' => Session::get('errors', [])]; //gets the errors from the session, returns empty array if none
+		$errors = Session::get('errors', []); //gets the errors from the session, returns empty array if none
+		$old = Session::get('old', ['username' => '']);
 		Session::forget('errors');									//forget errors for when refresh is done, errors disappear
-		return view('iteach.auth.login', compact('data'));
+		Session::forget('old');
+		return view('iteach.auth.login', compact('data', 'errors', 'old'));
 	
 	}
 
@@ -39,9 +42,52 @@ class AuthController extends Controller {
 		//provides error data and places into temporary session
 		$errors = [];
 		$errors += ['auth' => 'Username/Password match is invalid'];
+		$old = ['username' => $username];
 		Session::put('errors', $errors);	//place into section
+		Session::put('old', $old);
 
 		return redirect()->intended('login');	//This is done to hide submitted data from the url
+	
+	}
+
+
+	public function attempt_register(){
+
+		if(Input::get('username') == null)			//if no input (manually entered /attempt_login) is placed, redirect to index
+			return redirect()->intended('register');
+
+		$employeeID = Input::get('employeeID');
+		$username = Input::get('username');
+		$password1 = Input::get('password1');
+		$password2 = Input::get('password2');
+
+		$errors = [];
+		
+		$users = User::where('username', '=', $username)->get();
+		$emp = User::where('employeeId', '=', $employeeID)->get();
+
+
+		if(count($users) > 0){
+			$errors += ['user' => 'Username already exists!'];
+		}
+		if(count($emp) > 0){
+			$errors += ['emp' => 'Employee id already exists!'];
+		}
+		if($password1 != $password2){
+			$errors += ['pass' => 'Passwords do not match'];
+		}
+		
+		if(count($errors) == 0){
+			User::create(['type'=>'faculty','username'=>$username, 'employeeId' => $employeeID, 'password'=>bcrypt($password1)]);
+			return redirect()->intended('index');
+		}
+
+		//provides error data and places into temporary session
+		$old = ['username' => $username];
+		Session::put('errors', $errors);	//place into section
+		Session::put('old', $old);
+
+		return redirect()->intended('register');	//This is done to hide submitted data from the url
 	
 	}
 	
@@ -58,9 +104,13 @@ class AuthController extends Controller {
 
 		$data = [];
 		$data += ['type' => 'su'];
-		$data += ['errors' => Session::get('errors', [])];
+		$errors = Session::get('errors', []);
+//		$old = ['firstName' => '', 'lastName' => '', 'username' => ''];
+		$old = Session::get('old', [ 'username' => '']);
 		Session::forget('errors');
-		return view('iteach.auth.sign-up', compact('data'));
+		Session::forget('old', $old);
+		
+		return view('iteach.auth.sign-up', compact('data', 'errors', 'old'));
 	}
 
 	//First page to be viewed

@@ -1,4 +1,4 @@
-<?php
+ <?php
 
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Eloquent\Model;
@@ -15,17 +15,22 @@ class UserTableSeeder extends Seeder {
 		DB::table('users')->delete();
 		DB::table('users')->insert(array(
 			['type'=>'admin',
-			'fname'=>'Isagani',
-			'lname'=>'Marquez',
 			'username'=>'Gani',
-			'email'=>'gani@gmail.com',
+			'employeeId'=>'0987654321',
 			'password'=> bcrypt('masterGani')],
 			['type'=>'faculty',
-			'fname'=>'CJ',
-			'lname'=>'Cruz',
 			'username'=>'CJ',
-			'email'=>'cj@gmail.com',
+			'employeeId'=>'1234567890',
 			'password'=> bcrypt('masterCJ')],
+			['type'=>'admin',
+			'username'=>'kepbautista',
+			'employeeId'=>'005',
+			'password'=> bcrypt('kepbautista')],
+			['type'=>'faculty',
+			'username'=>'mbbderobles',
+			'employeeId'=>'040',
+			'password'=> bcrypt('mbbderobles')],
+
 		));
 	}
 }
